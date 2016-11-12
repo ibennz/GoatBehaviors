@@ -6,8 +6,8 @@
  * Time: 10:17 AM
  */
 namespace Goat\Backend;
+
 class Controller{
-    use BehaviorTrait;
     //private variable
     private $_behaviors;
     public function __construct()
@@ -16,21 +16,32 @@ class Controller{
         //check if our behaviors is set
         if(!empty($this->_behaviors))
         {
-            //then we procced  to create a new instance of the behavior class
-            //heres the hic, we need to create a new instance of the user behavior then execute it
-            require_once ( APP_DIR . "behaviors/" . key($this->_behaviors) . "Behaviors" . ".php");
-            $FQN = __NAMESPACE__ . "\\" . key($this->_behaviors)."Behavior";
-            //now here if we create a new instance of our object, it wont inherits what THIS class have as params such as the behaviors() rules
-            $obj = new $FQN;
+            //hardcoded for testing purposes.
+            require_once str_replace("controller.php", "userStuff\\myBehavior.php", __FILE__);
+            //this has no namespace
+            $FQN = "myBehavior";
+            $reflector = new \ReflectionClass($FQN);
+            //this is to avoid the instance to have a parent class which would be a new instance of this class thus overriding the variable we change.
+            //now that i think about it.. why I just dont make the init function static? 
+            $obj = $reflector->newInstanceWithoutConstructor();
+            //pass the behaviors array rule to our new instance
+            $obj->behaviors =  $this->_behaviors;
+            //invoke the init call
+            $obj->init();
+
         }
     }
+    /*
+     * Is overridden in the controller instance
+     * */
     public function behaviors()
     {
-        //is mostly overriden
         return [];
     }
-    final private function nonoverridable()
+
+    final public function nonoverridable()
     {
+        return "something";
         //do some main core action, like routing or w/e
     }
 }
